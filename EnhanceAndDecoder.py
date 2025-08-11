@@ -4,7 +4,7 @@ from einops.layers.tensorflow import Rearrange
 
 import ResCNN
 
-'''特征增强与恢复图像函数'''
+'''特征增强与恢复图像函数/特徴強化とデコーダー'''
 
 def openFunction(lightRes,darkRes,ViTImg):
 
@@ -73,15 +73,6 @@ class decoder(tf.keras.Model):
         Y = self.conv3(Y)
 
         return Y
-    
-    '''已由下方实现
-    def changeViT_before_enhance(self,ViTImg,channelSize=512,patchSize=4):      #改变ViT输出规格，适应卷积输出 [b,513,768]->[b,16,8,512]
-        Y = tf.Variable(np.delete(ViTImg.numpy(),[0],1))
-        Y = Rearrange('b (n p) (c p1 p2) -> b (n p) (p1 p2) c',p1=16,p2=16,p=16)(Y)
-
-        Y = tf.keras.layers.Conv2D(128,8,8,'valid')(Y)
-        return self.relu(tf.keras.layers.Conv2D(channelSize,patchSize,patchSize,'valid')(Y))
-    '''
 
 
 class CVbE(tf.keras.layers.Layer):                      #实现了上述函数的自定义层
@@ -135,5 +126,7 @@ class decoder_temp(tf.keras.Model):
         Y = self.conv3(Y)
 
         return Y
+        
     
+
     
