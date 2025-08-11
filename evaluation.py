@@ -10,7 +10,7 @@ import train
 
 
 
-'''评价对比用'''
+'''评价对比用/モデル評価用'''
 
 
 
@@ -74,7 +74,7 @@ class test():                   #评估模型效果用/再输出用
         print('creating end')
 
 
-
+#各種損失関数
 class evaluationIndicator():
     def ssim(self,trueImage,outImage):      #结构相似性
         #Y = tf.keras.metrics.mean_squared_error(trueImage,outImage)
@@ -222,4 +222,5 @@ class evaluationIndicator():
         deno = np.sum(gA+gB)
         nume = np.sum(np.multiply(QAF,gA)+np.multiply(QBF,gB))
         output = nume/deno
+
         print(output)
