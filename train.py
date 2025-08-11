@@ -10,12 +10,13 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
+'''训练用/トレーニング用'''
 
-'''训练用'''
+
 class allModel(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.model_res = ResCNN.Rescnn()                                #读取模型
+        self.model_res = ResCNN.Rescnn()                                #读取模型/モデルの読み取り
         self.model_res2 = ResCNN.Rescnn()
         #self.model_ViT = visionTransformer.visionTransformer(768)
         self.model_entance = EnhanceAndDecoder.enhanceBlock(512)
@@ -35,7 +36,7 @@ class allModel(tf.keras.Model):
     
 
 
-#超参数定义
+#超参数定义/ハイパーパラメータ
 learnRate = 0.001
 numberEpochs = 20
 allNumber = 20
@@ -53,32 +54,7 @@ class training():
         self.exponentialDecay_lr = tf.keras.optimizers.schedules.ExponentialDecay(learnRate,20,0.999)
         #self.generatorOptimizer = tf.keras.optimizers.Adam(self.cosineDecay_lr)
         self.discriminatorOptimizer = tf.keras.optimizers.SGD(0.0005)
-
-        '''
-        self.model.trainable = False            #训练判别器模型
-        inputListL = tf.keras.layers.Input(shape=(256,256,3),batch_size=batchSize_s)
-        inputListD = tf.keras.layers.Input(shape=(256,256,3),batch_size=batchSize_s)
-        inputListN = tf.keras.layers.Input(shape=(256,256,3),batch_size=batchSize_s)
-
-        generatedImage = self.model([inputListL,inputListD])
-        falseOut = self.discriminator(generatedImage)
-        realOut = self.discriminator(inputListN)
-        mixWeight = tf.random.uniform(batchSize_s)
-        mixOut = (realOut * mixWeight) + ((1 - mixWeight) * falseOut)
-        mixOut_Out = self.discriminator(mixOut)
-        self.adversarialModel = tf.keras.Model(inputs=[inputListL,inputListD,inputListN],outputs=[realOut,falseOut,mixOut_Out])
-        self.adversarialModel.compile(loss=[lossFunction_wasserstein(),lossFunction_wasserstein(),lossFunction_gradientPenalty()],
-                                      optimizer=tf.keras.optimizers.Adam(learnRate),loss_weights=[1,1,10])
         
-        self.model.trainable = True
-        self.discriminator.trainable = False
-        inputListL = tf.keras.layers.Input(shape=(256,256,3),batch_size=batchSize_s)
-        inputListD = tf.keras.layers.Input(shape=(256,256,3),batch_size=batchSize_s)
-        generatedImage = self.model([inputListL,inputListD])
-        falseOut = self.discriminator(generatedImage)
-        self.generatorModel = tf.keras.Model(inputs=[inputListL,inputListD],outputs=falseOut)
-        self.generatorModel.compile(loss=lossFunction_wasserstein(),optimizer=self.discriminatorOptimizer)
-        '''
         self.discriminator.compile(optimizer=self.discriminatorOptimizer,loss='mean_squared_error',metrics=['Accuracy','binary_crossentropy'])
         self.adversarialModel = self.adversarial()        
             
@@ -179,7 +155,7 @@ class training():
 
 
 
-    #读取数据集
+    #读取数据集/データセットの読み取り
     def inputImage_all(self,testImang_filerPath,allNumber=allNumber):
         inputList_light = []
         inputList_dark = []
@@ -216,28 +192,6 @@ class training():
         inputList_dark_testData = numpy.array(inputList_dark[trainSize : ],'float32')
         inputList_normal_testData = numpy.array(inputList_normal[trainSize : ],'float32')
         
-        # imgIn_light = []
-        # imgIn_dark = []
-        # imgIn_normal = []
-        # for i in range(allNumber):
-        #     imgIn_light.extend(inputImage.inImage(f'./Dataset_Part1/light/{i+1}.jpg'))
-        #     imgIn_dark.extend(inputImage.inImage(f'./Dataset_Part1/dark/{i+1}.jpg'))
-        #     imgIn_normal.extend(inputImage.inImage(f'./Dataset_Part1/normal/{i+1}.jpg'))
-
-        # inputList_light_trainData = numpy.array(imgIn_light,'float32')
-        # inputList_dark_trainData = numpy.array(imgIn_dark,'float32')
-        # inputList_normal_trainData = numpy.array(imgIn_normal,'float32')
-
-        '''
-        #变为dataset对象，并转为float16格式
-        inputList_light_trainData = tf.data.Dataset.from_tensor_slices(inputList_light_trainData,'inputList_light_trainData').map(lambda a : tf.cast(a,'float16'))
-        inputList_dark_trainData = tf.data.Dataset.from_tensor_slices(inputList_dark_trainData,'inputList_dark_trainData').map(lambda a : tf.cast(a,'float16'))
-        inputList_normal_trainData = tf.data.Dataset.from_tensor_slices(inputList_normal_trainData,'inputLIst_normal_trainData').map(lambda a : tf.cast(a,'float16'))
-
-        inputList_light_testData = tf.data.Dataset.from_tensor_slices(inputList_light_testData,'inputList_light_testData').map(lambda a : tf.cast(a,'float16'))
-        inputList_dark_testData = tf.data.Dataset.from_tensor_slices(inputList_dark_testData,'inputList_dark_testData').map(lambda a : tf.cast(a,'float16'))
-        inputList_normal_testData = tf.data.Dataset.from_tensor_slices(inputList_normal_testData,'inputLIst_normal_testData').map(lambda a : tf.cast(a,'float16'))
-        '''
         return [inputList_light_trainData[:allNumber],inputList_dark_trainData[:allNumber],inputList_normal_trainData[:allNumber],
                 inputList_light_testData[:allNumber],inputList_dark_testData[:allNumber],inputList_normal_testData[:allNumber]]
     
@@ -280,117 +234,3 @@ class lossFunction_crossEntropy(tf.keras.losses.Loss):                          
         Y1 = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(trueImage,outImage))
         return Y1
 
-
-'''
-#与wgan-gp有关的代码，应该用不到了
-class lossFunction_gradientPenalty(tf.keras.losses.Loss):       #wgangp里的梯度惩罚
-    def call(self, y_true, y_pred, averaged_samples):
-        """
-        Computes gradient penalty based on prediction and weighted real / fake samples
-        """
-        # 求y_pred关于averaged_samples的导数（梯度）
-        # 即判别器的判断结果validity_interpolated与加权样本interpolated_img求导
-        # ps：interpolated_img作为默认参数（averaged_samples）在使用partial封装时已经提供
-        gradients = k.gradients(y_pred, averaged_samples)[0]
-        # compute the euclidean norm by squaring ...,计算范数
-        gradients_sqr = K.square(gradients)
-        #   ... summing over the rows ...
-        gradients_sqr_sum = K.sum(gradients_sqr,
-                                  axis=np.arange(1, len(gradients_sqr.shape)))
-        #   ... and sqrt
-        # 基本上就是对论文中的公式的实现
-        gradient_l2_norm = K.sqrt(gradients_sqr_sum)
-        # compute lambda * (1 - ||grad||)^2 still for each single sample
-        gradient_penalty = K.square(1 - gradient_l2_norm)
-        # return the mean as loss over all the batch samples
-        return tf.reduce_mean(gradient_penalty)
-    
-
-
-class lossFunction_wasserstein(tf.keras.losses.Loss):           #计算em距离，用于生成器
-    def call(self,trueImage,outImage):
-        ''
-        沿着指定轴取张量的平均值，
-        得到一个具有y_true * y_pred元素均值的张量
-        ''
-        return tf.reduce_mean(trueImage * outImage)
-    
-
-
-# 定义WGAN-GP的损失函数
-LAMBDA = 10  # 梯度惩罚的权重
-
-@tf.function
-def WGAN_GP_train_d_step(real_image, batch_size, step):
-    noise = tf.random.normal([batch_size, NOISE_DIM])
-    epsilon = tf.random.uniform(shape=[batch_size, 1, 1, 1], minval=0, maxval=1)
-
-    with tf.GradientTape(persistent=True) as d_tape:
-        with tf.GradientTape() as gp_tape:
-            fake_image = generator([noise], training=True)
-            fake_image_mixed = epsilon * tf.dtypes.cast(real_image, tf.float32) + ((1 - epsilon) * fake_image)
-            fake_mixed_pred = discriminator([fake_image_mixed], training=True)
-            
-            # 计算梯度惩罚
-            grads = gp_tape.gradient(fake_mixed_pred, fake_image_mixed)
-            grad_norms = tf.sqrt(tf.reduce_sum(tf.square(grads), axis=[1, 2, 3]))
-            gradient_penalty = tf.reduce_mean(tf.square(grad_norms - 1))
-            
-            fake_pred = discriminator([fake_image], training=True)
-            real_pred = discriminator([real_image], training=True)
-            
-            D_loss = tf.reduce_mean(fake_pred) - tf.reduce_mean(real_pred) + LAMBDA * gradient_penalty
-
-        # 计算判别器的梯度
-        D_gradients = d_tape.gradient(D_loss, discriminator.trainable_variables)
-        D_optimizer.apply_gradients(zip(D_gradients, discriminator.trainable_variables))
-
-@tf.function
-def WGAN_GP_train_g_step(real_image, batch_size, step):
-    noise = tf.random.normal([batch_size, NOISE_DIM])
-
-    with tf.GradientTape() as g_tape:
-        fake_image = generator([noise], training=True)
-        fake_pred = discriminator([fake_image], training=True)
-        G_loss = -tf.reduce_mean(fake_pred)
-
-        # 计算生成器的梯度
-        G_gradients = g_tape.gradient(G_loss, generator.trainable_variables)
-        G_optimizer.apply_gradients(zip(G_gradients, generator.trainable_variables))
-
-
-全部自己完成的每步训练函数，已废弃
-    def train_step(self,inputList,trueImage):         #定义训练每步内容
-        #先训练鉴别器
-        genertedImage = self.model(inputList)                   #调用生成器
-        print(genertedImage[0][0][:3])
-
-        with tf.GradientTape() as discriminatorTape:         #自动进行梯度计算，之后用于更新参数
-            
-            realOutput = self.discriminator(trueImage)              #调用鉴别器
-            falseOutput = self.discriminator(genertedImage)
-            print(realOutput,falseOutput)
-
-            discriminatorLoss1 = lossFunction_crossEntropy().call(realOutput,tf.ones_like(realOutput,'float32'))        #鉴别器的两个损失
-            discriminatorLoss2 = lossFunction_crossEntropy().call(falseOutput,tf.zeros_like(falseOutput,'float32'))
-            discriminatorLoss = (discriminatorLoss1 + discriminatorLoss2) / 2
-
-        discriminatorGradients = discriminatorTape.gradient(discriminatorLoss,self.discriminator.trainable_variables)    
-        self.discriminatorOptimizer.apply_gradients(zip(discriminatorGradients,self.discriminator.trainable_variables))
-        self.discriminator.trainable = False
-        with tf.GradientTape(persistent=True) as generatorTape:
-            #后训练生成器
-            genertedImage = self.model(inputList)
-            falseOutput_update = self.discriminator(genertedImage)
-            generatorLoss_MS = lossFunction_meanSquared().call(trueImage,genertedImage)         #生成器损失函数
-            generatorLoss_CE = lossFunction_crossEntropy().call(falseOutput_update,tf.ones_like(realOutput,'float32'))
-            generatorLoss_ssim = lossFunction_ssim().call(trueImage,genertedImage)
-            generatorLoss = generatorLoss_MS * 0.1 + generatorLoss_ssim * 10 + generatorLoss_CE * 5
-        
-        generatorGradients = generatorTape.gradient(generatorLoss,self.model.trainable_variables)                   #获取梯度        
-        self.generatorOptimizer.apply_gradients(zip(generatorGradients,self.model.trainable_variables))             #更新参数
-        self.discriminator.trainable = True
-        #print(f'Gloss: {generatorLoss} ,(MS:{generatorLoss_MS},ssim:{generatorLoss_ssim}), Dloss: {discriminatorLoss} ')
-        print(f'Gloss: {generatorLoss} Dloss: {discriminatorLoss} ')
-        return 
-'''
