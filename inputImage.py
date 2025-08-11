@@ -3,14 +3,14 @@ import os
 import numpy as np
 
 
-'''读取/保存图片函数'''
+'''读取/保存图片函数/画像の読み取りと保存関数'''
 
 #调用函数/API
 def openFunction(imgPath):
     return inImage(imgPath)
 
 
-#读取/裁剪图片
+#读取/裁剪图片/画像の読み取りとカット
 def inImage(imgPath,imgWeith=256,imgLength=256,wholeImage=False):
     imageTemp1 = imageio.v3.imread(imgPath)     #读取图片
     height,width,_ = imageTemp1.shape           #获取图像各项信息
@@ -44,7 +44,7 @@ def inImage_simple_temp(imgPath='./outImages/',amount=15):
 
 
 
-#保存图片
+#保存图片/画像の保存
 def saveImage(imgArray,savePath='./outImages/'):
     if not os.path.exists(savePath):       
         os.makedirs(savePath)
@@ -64,5 +64,6 @@ def saveImage_tensorImg(tensorImg,savePath='./outImages/'):
         Y = tensorImg[i]                #改变类型和数据类型
         Y = np.around(Y.numpy(),3).astype(np.uint8)
         imageio.v3.imwrite(f'{savePath}img{i}.jpg',Y,extension='.jpg')
+
 
 
