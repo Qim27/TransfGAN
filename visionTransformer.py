@@ -3,7 +3,7 @@ from einops.layers.tensorflow import Rearrange
 import einops
 import ResCNN
 
-'''transformer部分'''
+'''transformer部分/transformerモデル'''
 
 #API
 def openFunction(lightList,darkList):
@@ -21,7 +21,7 @@ def openFunction_discriminator(lightList,darkList,generateImg):
 
 
 
-#transformer块
+#transformer块/transformerブロック
 class transformerBlock(tf.keras.Model):
     def __init__(self,dim,heads=8,dimHead=64):
         super().__init__()
@@ -73,7 +73,7 @@ class transformerBlock(tf.keras.Model):
 
 
 
-#ViT主函数
+#ViT主函数/ViT関数
 class visionTransformer(tf.keras.Model):
     def __init__(self,dim,heads=8,depth=12,patchSize=16):
         super().__init__()
@@ -205,4 +205,6 @@ class beforeCompute(tf.keras.layers.Layer):                 #对输入数据进�
         tensorImg_4x = Rearrange('b (h p1) (w p2) c -> b (h w) (p1 p2 c)',p1=self.patchSize1_2,p2=self.patchSize1_2)(inputImg_4x)                       #->[b,1024,384]
         tensorImg_2x = Rearrange('b (h p1) (w p2) c -> b (h w) (p1 p2 c)',p1=self.patchSize1_2,p2=self.patchSize1_2)(inputImg_2x)                       #->[b,256,384]
         tensorImg = Rearrange('b (h p1) (w p2) c -> b (h w) (p1 p2 c)',p1=self.patchSize1_2,p2=self.patchSize1_2)(inputImg)                             #->[b,64,768]
+
         return [tensorImg_4x,tensorImg_2x,tensorImg]
+
