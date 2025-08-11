@@ -8,7 +8,7 @@ import imageio
 
 import inputImage
 
-
+#UI画面
 
 top = tkinter.Tk()
 top.geometry('1200x650')
@@ -95,5 +95,6 @@ inp4.grid(row=2,column=4)
 
 
 #labelImg.pack()
+
 
 top.mainloop()
