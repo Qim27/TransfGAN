@@ -7,24 +7,25 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
-'''main函数/Main関数'''
+'''Main関数'''
 
 
-imgPath = './test_imgs/'        #输入照片存储路径/画像の保存先
+imgPath = './test_imgs/'        #入力画像の保存パス
 
 def test():                    #テスト用関数
-    lightList = inputImage.openFunction(imgPath + 'o1.JPG')     #返回分割后的图片结果
+    lightList = inputImage.openFunction(imgPath + 'o1.JPG')     #分割後の画像結果を返す
     darkList = inputImage.openFunction(imgPath + 'u1.JPG')
 
-    lightRes = ResCNN.openFunction(lightList)                   #进行残差计算
+    lightRes = ResCNN.openFunction(lightList)                   #残差計算を行う
     darkRes = ResCNN.openFunction(darkList)
 
-    ViT = visionTransformer.openFunction(lightList,darkList)                #进行ViT计算
-    generateImg = EnhanceAndDecoder.openFunction(lightRes,darkRes,ViT)      #生成图像
+    ViT = visionTransformer.openFunction(lightList,darkList)                #ViTの計算を行う
+    generateImg = EnhanceAndDecoder.openFunction(lightRes,darkRes,ViT)      画像を生成する生成图像
 
-    discriminatorLight = visionTransformer.openFunction_discriminator(lightList,darkList,generateImg)    #输入进鉴别器进行判定
+    discriminatorLight = visionTransformer.openFunction_discriminator(lightList,darkList,generateImg)    #識別器に入力して判定を行う
 
 
 if __name__ == "__main__":
     train.training().call()
     #evaluation.test().call()
+
