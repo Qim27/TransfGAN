@@ -4,7 +4,7 @@ from einops.layers.tensorflow import Rearrange
 
 import ResCNN
 
-'''特征增强与恢复图像函数/特徴強化とデコーダー'''
+'''特徴強化および画像復元関数'''
 
 def openFunction(lightRes,darkRes,ViTImg):
 
@@ -25,19 +25,19 @@ class enhanceBlock(tf.keras.Model):
         self.resBlock2 = ResCNN.ResidualBlock(512)
 
 
-    def call(self,lightRes,darkRes):        #横向拼接后接两个卷积块
+    def call(self,lightRes,darkRes):        #横方向に連結した後、2つの畳み込みブロックを接続
         #Y = tf.concat([lightRes,darkRes],1)
         #Y = self.conv3(Y)
         #Y = self.relu(Y)
         Y = (lightRes + darkRes) / 2
 
-        Y = self.resBlock1(Y)               #使用残差块进行特征增强
+        Y = self.resBlock1(Y)               #残差ブロックを用いた特徴強化
         Y = self.resBlock2(Y)
         Y = self.dropout(Y)
         return Y                            #->[b,8,8,512]
     
 
-
+#下の temp 関数に置き換えられている
 class decoder(tf.keras.Model):
     def __init__(self,inChannel):
         super().__init__()
@@ -58,14 +58,11 @@ class decoder(tf.keras.Model):
         self.CVbE = CVbE()
 
 
-    def call(self,tensorImg,ViTImg):                        #两个卷积块和一个1x1卷积层
+    def call(self,tensorImg,ViTImg):                        #2つの畳み込みブロックと1×1畳み込み層
         ViTImg = self.CVbE(ViTImg)
-        #Y = tf.concat([tensorImg,ViTImg],1)
         Y = (tensorImg + ViTImg) / 2
 
-        #Y = self.perconv(Y)                                 #[b,24,8,512] -> [b,8,8,512]
-
-        Y = self.conv1(self.deconv1(Y))                     #用反卷积增加面积，用卷积降低维度
+        Y = self.conv1(self.deconv1(Y))                     #逆畳み込みで空間サイズを拡大し、畳み込みで次元を削減
         Y = self.relu(Y)
 
         Y = self.conv2(self.deconv2(Y))
@@ -75,7 +72,7 @@ class decoder(tf.keras.Model):
         return Y
 
 
-class CVbE(tf.keras.layers.Layer):                      #实现了上述函数的自定义层
+class CVbE(tf.keras.layers.Layer):                      #上記処理を実装したカスタムレイヤー
     def __init__(self,channelSize=512,patchSize=4):
         super().__init__()
         self.conv1 = tf.keras.layers.Conv2D(128,8,8,'valid')
@@ -87,8 +84,6 @@ class CVbE(tf.keras.layers.Layer):                      #实现了上述函数�
         None
 
     def call(self,ViTImg):
-        #ViTImg = tf.py_function(lambda ViTImg : ViTImg.numpy(),Tout='float32',name='CVbE')
-        #Y = tf.Variable(np.delete(toNumpy(ViTImg),[0],1))
         Y = Rearrange('b (n p) (c p1 p2) -> b (n p) (p1 p2) c',p1=16,p2=16,p=16)(ViTImg)
 
         Y = self.conv2(self.conv1(Y))
@@ -115,9 +110,8 @@ class decoder_temp(tf.keras.Model):
         self.perconv = tf.keras.layers.Conv2D(inChannel,1,[3,1])
 
 
-    def call(self,Y):                       #两个卷积块和一个1x1卷积层
-        #Y = (lightRes + darkRes) / 2
-        Y = self.conv1(self.deconv1(Y))               #用反卷积增加面积，用卷积降低维度
+    def call(self,Y):                       #2つの畳み込みブロックと1×1畳み込み層
+        Y = self.conv1(self.deconv1(Y))               #逆畳み込みで空間サイズを拡大し、畳み込みで次元を削減
         Y = self.relu(Y)
 
         Y = self.conv2(self.deconv2(Y))
@@ -130,3 +124,4 @@ class decoder_temp(tf.keras.Model):
     
 
     
+
