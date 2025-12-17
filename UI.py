@@ -8,7 +8,8 @@ import imageio
 
 import inputImage
 
-#UI画面
+#UI部分
+#可視化制作ツールで作ったため、コメントなかった。
 
 top = tkinter.Tk()
 top.geometry('1200x650')
@@ -98,3 +99,4 @@ inp4.grid(row=2,column=4)
 
 
 top.mainloop()
+
