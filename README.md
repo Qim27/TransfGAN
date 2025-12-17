@@ -1,4 +1,9 @@
 # TransfGAN
-The code for my university thesis.
-卒業研究のソースコードです。
+卒業研究のソースコードです。The code for my university thesis.
 
+紹介
+本モデルは，多露光画像融合アルゴリズムのための生成対向ネットワーク（GAN）である。
+ 
+生成器には，残差接続に基づく畳み込みニューラルネットワークを用いて特徴抽出および画像復元を行う。
+
+判別器には，エンコーダ構造に基づく多層Transformerによる分類アルゴリズムを採用している。
