@@ -1,5 +1,5 @@
 # TransfGAN
-卒業研究のソースコードです。The code for my university thesis.
+大学卒業研究のソースコードです。The code for my university thesis.
 
 
 紹介
