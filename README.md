@@ -12,4 +12,4 @@
 
 **発表スライド**
 
-[発表スライド](https://github.com/Qim27/TransfGAN/blob/main/%E8%AB%96%E6%96%87%E7%99%BA%E8%A1%A8.pdf)
+詳細は[発表スライド](https://github.com/Qim27/TransfGAN/blob/main/%E8%AB%96%E6%96%87%E7%99%BA%E8%A1%A8.pdf)で確認頂ければ幸いです。
